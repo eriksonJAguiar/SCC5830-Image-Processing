@@ -1,12 +1,22 @@
 # SCC5830 Image Processing -- Final Project
 
-## Description:
+**Author:** Erikson Julio de Aguiar
 
+## Abstract
 
-## Abstract:
+- proposal objective
+- Keyworkds -> main process involving
 
+## Images examples
 
-## Next steps:
+- Dataset and images examples
 
+## Next steps
 
-## References:
+- goal 1
+- goal 2
+
+## References
+
+- Paper 1
+- Paper 2
