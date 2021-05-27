@@ -1,1 +1,12 @@
-# ssc5830_final_project
+# SSC5830 Image Processing -- Final Project
+
+## Description:
+
+
+## Abstract:
+
+
+## Next steps:
+
+
+## References:
