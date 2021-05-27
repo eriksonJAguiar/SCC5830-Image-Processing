@@ -1,4 +1,4 @@
-# SSC5830 Image Processing -- Final Project
+# SCC5830 Image Processing -- Final Project
 
 ## Description:
 
