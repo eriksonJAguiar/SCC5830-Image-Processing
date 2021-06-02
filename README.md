@@ -1,7 +1,7 @@
 # SCC5830 Image Processing -- Final Project
 
 - **Author:** Erikson Julio de Aguiar (graduate student)
-- **proposal objective:** Role of pre-processing techniques to reduce effect of adversarial perturbations in medical images
+- **proposal objective:** Role of pre-processing techniques to reduce effect of adversarial perturbations on medical images
 
 ## Abstract
 
