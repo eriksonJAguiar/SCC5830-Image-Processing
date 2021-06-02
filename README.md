@@ -13,7 +13,11 @@ Adversarial perturbations inserted on medical images may cause misclassification
 
 ## Images examples
 
-- Dataset and images examples
+- Dataset contains 5,863 X-Ray images (JPEG) with 2 classes (Pneumonia/Normal). Dabaset is available on [Kaggle](https://www.kaggle.com/paultimothymooney/chest-xray-pneumonia)
+
+Images example:
+
+
 
 ## Next steps
 
@@ -24,7 +28,6 @@ Adversarial perturbations inserted on medical images may cause misclassification
 - Apply methods comparing to baseline (in our proposal will be without perturbations)
 - Evaluate proposal
 - Final report (07/07)
-
 
 ## References
 
