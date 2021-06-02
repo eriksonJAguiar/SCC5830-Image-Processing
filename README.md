@@ -15,9 +15,9 @@ Adversarial perturbations inserted on medical images may cause misclassification
 
 - Dataset contains 5,863 X-Ray images (JPEG) with 2 classes (Pneumonia/Normal). Dabaset is available on [Kaggle](https://www.kaggle.com/paultimothymooney/chest-xray-pneumonia)
 
-Images example:
+**Images example:**
 
-
+![](https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/pulmao.png)
 
 ## Next steps
 
