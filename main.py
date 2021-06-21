@@ -3,6 +3,8 @@ import imageio
 import matplotlib.pyplot as plt
 from scipy.interpolate import NearestNDInterpolator
 import math
+import sys
+sys.path.append('../2019-scalingattack/scaleatt')
 
 class ImageScaling:
     '''
@@ -66,18 +68,45 @@ class ImageScaling:
                 - image_t: target image
             return:
                 - A: attack image
-        '''
-        
-    
-    def show_img(self, img):
-        plt.imshow(img, cmap='gray', vmin=0, vmax=255)
+        '''   
+        from scaling.ScalingGenerator import ScalingGenerator
+        from scaling.SuppScalingLibraries import SuppScalingLibraries
+        from scaling.SuppScalingAlgorithms import SuppScalingAlgorithms
+        from attack.QuadrScaleAttack import QuadraticScaleAttack
+        from attack.ScaleAttackStrategy import ScaleAttackStrategy
 
+        scaling_algorithm = SuppScalingAlgorithms.NEAREST
+        scaling_library = SuppScalingLibraries.CV
+
+        scaler_approach = ScalingGenerator.create_scaling_approach(
+            x_val_source_shape=img_s.shape,
+            x_val_target_shape=img_t.shape,
+            lib=scaling_library,
+            alg=scaling_algorithm
+        )
+
+        scale_att =  QuadraticScaleAttack(eps=1, verbose=False)
+        attack_image, _, _ = scale_att.attack(src_image=img_s,
+                                             target_image=img_t,
+                                             scaler_approach=scaler_approach)
+
+        return attack_image
+    
+    def show_img(self, img, fname):
+        plt.imshow(img, cmap='gray', vmin=0, vmax=255)
+        plt.imsave(fname, img)
+        plt.axis('off')
         plt.show()
     
+        
 
 
-img = imageio.imread('./chest.png', as_gray=True)
+
+img_s = imageio.imread('./chest.png', as_gray=True).astype(np.uint8)
+img_t = imageio.imread('./cat.jpg', as_gray=True).astype(np.uint8)
 attack = ImageScaling()
-#img_resize = attack.nn_resize(img, 128,128)
-img_resize = attack.b_resize(img, 128, 128)
-attack.show_img(img_resize)
+img_t = attack.nn_resize(img_t, 128,128)
+#img_resize = attack.b_resize(img, 128, 128)
+#attack.show_img(img_resize)
+img_attack = attack.build_attack(img_s,img_t)
+attack.show_img(img_attack, 'img_attack.png')
