@@ -17,7 +17,7 @@ Adversarial attacks insert perturbations on medical images may cause misclassifi
 
 **Images example:**
 
-![](https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/pulmao.png)
+![](https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/chest.png)
 
 ## Next steps
 
