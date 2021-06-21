@@ -58,11 +58,22 @@ class ImageScaling:
 
         return r_img
     
+    def build_attack(self, img_s, img_t):
+        '''
+            function to build attack using tool
+            paramters:
+                - image_s: source image
+                - image_t: target image
+            return:
+                - A: attack image
+        '''
+        
+    
     def show_img(self, img):
         plt.imshow(img, cmap='gray', vmin=0, vmax=255)
 
         plt.show()
-        
+    
 
 
 img = imageio.imread('./chest.png', as_gray=True)
