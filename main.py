@@ -76,7 +76,7 @@ class ImageScaling:
         from attack.ScaleAttackStrategy import ScaleAttackStrategy
 
         scaling_algorithm = SuppScalingAlgorithms.NEAREST
-        scaling_library = SuppScalingLibraries.CV
+        scaling_library = SuppScalingLibraries.PIL
 
         scaler_approach = ScalingGenerator.create_scaling_approach(
             x_val_source_shape=img_s.shape,
@@ -94,19 +94,26 @@ class ImageScaling:
     
     def show_img(self, img, fname):
         plt.imshow(img, cmap='gray', vmin=0, vmax=255)
-        plt.imsave(fname, img)
+        #plt.imsave(fname, img, cmap='gray', vmin=0, vmax=255)
         plt.axis('off')
         plt.show()
     
+
+    def load_img(self, fname):
+        '''
+            load images with library
+        '''
+        from utils.plot_image_utils import plot_images_in_actual_size
+
+        plot_images_in_actual_size(imgs=[fname], titles=["Attack"], rows=1)
         
-
-
-
-img_s = imageio.imread('./chest.png', as_gray=True).astype(np.uint8)
-img_t = imageio.imread('./cat.jpg', as_gray=True).astype(np.uint8)
+#img_s = imageio.imread('./chest.png', as_gray=True).astype(np.uint8)
+#img_t = imageio.imread('./cat.jpg', as_gray=True).astype(np.uint8)
+#img_attack = imageio.imread('./img_attack.png', as_gray=True).astype(np.uint8)
 attack = ImageScaling()
-img_t = attack.nn_resize(img_t, 128,128)
+attack.load_img('./img_attack.png')
+#img_t = attack.nn_resize(img_attack, 128,128)
 #img_resize = attack.b_resize(img, 128, 128)
 #attack.show_img(img_resize)
-img_attack = attack.build_attack(img_s,img_t)
-attack.show_img(img_attack, 'img_attack.png')
+#img_attack = attack.build_attack(img_s,img_t)
+#attack.show_img(img_t, 'img_attack.png')
