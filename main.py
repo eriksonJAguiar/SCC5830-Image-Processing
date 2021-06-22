@@ -1,7 +1,6 @@
 import numpy as np
 import imageio
 import matplotlib.pyplot as plt
-from scipy.interpolate import NearestNDInterpolator
 import math
 import sys
 sys.path.append('../2019-scalingattack/scaleatt')
@@ -60,7 +59,7 @@ class ImageScaling:
 
         return r_img
     
-    def build_attack(self, img_s, img_t):
+    def build_attack_tool(self, img_s, img_t):
         '''
             function to build attack using tool
             paramters:
@@ -94,18 +93,10 @@ class ImageScaling:
     
     def show_img(self, img, fname):
         plt.imshow(img, cmap='gray', vmin=0, vmax=255)
-        #plt.imsave(fname, img, cmap='gray', vmin=0, vmax=255)
+        plt.imsave(fname, img, cmap='gray', vmin=0, vmax=255)
         plt.axis('off')
         plt.show()
     
-
-    def load_img(self, fname):
-        '''
-            load images with library
-        '''
-        from utils.plot_image_utils import plot_images_in_actual_size
-
-        plot_images_in_actual_size(imgs=[fname], titles=["Attack"], rows=1)
         
 #img_s = imageio.imread('./chest.png', as_gray=True).astype(np.uint8)
 #img_t = imageio.imread('./cat.jpg', as_gray=True).astype(np.uint8)
