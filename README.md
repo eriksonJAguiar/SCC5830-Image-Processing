@@ -20,15 +20,7 @@ Adversarial attacks insert perturbations on medical images may cause misclassifi
 ![](https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/chest.png)
 
 ## Next steps
-
-- Modelling attack
-- Apply perturbations to poisoning the images
-- Analyze methods to detect attacked images
-- Partial report (23/06)
-- Analyze methods of image restoration and enhancement to reduce perturbations
-- Apply methods comparing to baseline (in our proposal will be without perturbations)
-- Evaluate proposal
-- Final report (07/07)
+- Take a look on ![Project 1](https://github.com/eriksonJAguiar/scc5830_final_project/projects/1)
 
 ## References
 
