@@ -31,6 +31,12 @@ Adversarial attacks insert perturbations on medical images may cause misclassifi
     <img src="https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/img_attack.png" alt="drawing" width="200"/>
     <img src="https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/img_rescale.png" alt="drawing" width="100"/>
   </div>
+  
+ **Result image -- attack**
+ 
+ <img src="https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/img_attack.png" alt="drawing" width="500"/>
+ 
+ p.s. the resulting image contains a bug, because the optimization function changed (I am working to fix this bug). This function solves the min norm L_inf of the perturbation 1 
 
 ## Next steps
 
