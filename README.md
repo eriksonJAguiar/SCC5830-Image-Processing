@@ -28,7 +28,9 @@ Adversarial attacks insert perturbations on medical images may cause misclassifi
 <img src="https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/image-scaling.png" alt="drawing" width="200"/>
 
 ## Next steps
+
 - Take a look the ![Project 1](https://github.com/eriksonJAguiar/scc5830_final_project/projects/1)
+
 
 ## References
 
