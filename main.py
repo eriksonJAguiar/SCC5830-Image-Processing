@@ -1,9 +1,12 @@
 import numpy as np
 import imageio
 import matplotlib.pyplot as plt
-from scipy.interpolate import NearestNDInterpolator
+from numpy.random.mtrand import beta
+from scipy.optimize import minimize
 import math
 import sys
+
+from numpy.lib.utils import source
 sys.path.append('../2019-scalingattack/scaleatt')
 
 class ImageScaling:
@@ -40,15 +43,15 @@ class ImageScaling:
             return:
                 - r_img: risized image (nxm)
         '''
-        r_img = np.zeros((n,m), dtype=np.uint8)
-        im_n, im_m = img.shape
+        r_img = np.zeros((m,n), dtype=np.uint8)
+        im_m, im_n = img.shape
         img = np.pad(img, ((0,1),(0,1)), 'constant')
 
-        for x in range(n):
-            for y in range(m):
+        for x in range(m):
+            for y in range(n):
 
-                sx = (x+1) * (im_n/n)-1
-                sy = (y+1) * (im_m/m)-1
+                sx = (x+1) * (im_m/m)-1
+                sy = (y+1) * (im_n/n)-1
 
                 i = math.floor(sx)
                 j = math.floor(sy)
@@ -59,8 +62,91 @@ class ImageScaling:
                 r_img[x,y] = (1-u)*(1-v)*img[i,j]+u*(1-v)*img[i+1,j]+(1-u)*v*img[i,j+1]+u*v*img[i+1,j+1]
 
         return r_img
+
+    def get_coeficient(self, beta, size_s, size_t):
+        '''
+            generate coeficients to create perturbations
+            parameters:
+                - beta: image factor
+                - size_s height or width of source image
+                - size_t: height or width of source image
+               
+            returns:
+                - est_matrix: estimated matrix
+        '''
+        source = (beta * np.eye(size_s)).astype(np.uint8)
+        output = self.b_resize(source, size_s, size_t)
+
+        est_matrix = output[:,:,0]/(np.sum(output[:,:,0], axis=1).reshape(size_t, 1))
+
+        return est_matrix
     
-    def build_attack(self, img_s, img_t):
+    def get_perturbation(self, beta, mat_l, mat_r, img_s, img_t):
+        '''
+            get image perturbation
+        '''
+        #matrix height
+        #mat_l = self.get_coeficient(m, m_l)
+        #matrix width
+        #mat_r = self.get_coeficient(n, n_l)
+        m, n = img_s.shape
+        m_l, n_l = img_t
+
+        modif = np.zeros((m,n))
+
+        attack = (np.tanh(modif) + 1)*0.5
+
+        aux = attack.reshape(m,-1)
+        aux = np.matmul(mat_l, aux)
+        aux = np.transpose(aux, (1,0))
+        aux = np.reshape(aux, (n, -1))
+        aux = np.matmul(mat_r, aux)
+        aux = np.reshape(aux, (-1, m_l))
+        output = np.transpose(aux, (1,0))
+
+        # perturbation delta 1
+        d1 = attack - img_s
+        #perturbation delta 2
+        d2 = attack - img_t
+
+        INmax = np.max(img_s)
+
+        obj1 = np.sum(np.sqrt(d1))/(m*n)
+        obj2 = (beta * np.sum(np.sqrt(d2)))/(m_l, n_l)
+        obj = obj1 + obj2
+
+        const = ({'type': 'ineq', 'func': self.constraint})
+
+        attack_sol = minimize(self.objective, attack, method='', constraints=const, options={'disp': True})
+        print(attack_sol)
+
+
+    def objective(self, d1):
+        '''
+            objetive of optimization method
+            parameters:
+                - d: perturbation
+            
+        '''
+        return np.power(np.linalg.norm(d1, ord='-inf'))
+    
+    def constraint(self, mat_l, img_s, imag_t, d1, INmax, epsilon, m,n):
+        ''' 
+            constraint of optimization method
+        '''
+        s_l = self.b_resize(img_s, m, n)
+        return np.linalg.norm((mat_l*(s_l*d1) - imag_t), ord='-inf') >= epsilon*INmax
+    
+    def delta_noise(self, n,m):
+        '''
+            delta noise
+        '''
+        noise = np.random.logistic(1, 0.1, [n,m])
+
+        return noise
+
+    
+    def build_attack_tool(self, img_s, img_t):
         '''
             function to build attack using tool
             paramters:
@@ -69,28 +155,20 @@ class ImageScaling:
             return:
                 - A: attack image
         '''   
-        from scaling.ScalingGenerator import ScalingGenerator
-        from scaling.SuppScalingLibraries import SuppScalingLibraries
-        from scaling.SuppScalingAlgorithms import SuppScalingAlgorithms
-        from attack.QuadrScaleAttack import QuadraticScaleAttack
-        from attack.ScaleAttackStrategy import ScaleAttackStrategy
+        m, n = img_s.shape
+        m_l, n_l = img_t.shape
+        beta = 1
 
-        scaling_algorithm = SuppScalingAlgorithms.NEAREST
-        scaling_library = SuppScalingLibraries.PIL
+        mat_l = self.get_coeficient(beta, m, m_l)
+        mat_r = self.get_coeficient(beta, n, n_l)
 
-        scaler_approach = ScalingGenerator.create_scaling_approach(
-            x_val_source_shape=img_s.shape,
-            x_val_target_shape=img_t.shape,
-            lib=scaling_library,
-            alg=scaling_algorithm
-        )
+        img_s = img_s/beta
+        img_t = img_t/beta
 
-        scale_att =  QuadraticScaleAttack(eps=1, verbose=False)
-        attack_image, _, _ = scale_att.attack(src_image=img_s,
-                                             target_image=img_t,
-                                             scaler_approach=scaler_approach)
+        A = self.get_perturbation(beta, mat_l, mat_r, img_s, img_t)
 
-        return attack_image
+        return (A*beta).astype(np.uint8)
+
     
     def show_img(self, img, fname):
         plt.imshow(img, cmap='gray', vmin=0, vmax=255)
@@ -98,20 +176,12 @@ class ImageScaling:
         plt.axis('off')
         plt.show()
     
-
-    def load_img(self, fname):
-        '''
-            load images with library
-        '''
-        from utils.plot_image_utils import plot_images_in_actual_size
-
-        plot_images_in_actual_size(imgs=[fname], titles=["Attack"], rows=1)
         
-#img_s = imageio.imread('./chest.png', as_gray=True).astype(np.uint8)
+img_s = imageio.imread('./chest.png', as_gray=True)
+N,M = img_s.shape
 #img_t = imageio.imread('./cat.jpg', as_gray=True).astype(np.uint8)
 #img_attack = imageio.imread('./img_attack.png', as_gray=True).astype(np.uint8)
 attack = ImageScaling()
-attack.load_img('./img_attack.png')
 #img_t = attack.nn_resize(img_attack, 128,128)
 #img_resize = attack.b_resize(img, 128, 128)
 #attack.show_img(img_resize)
