@@ -74,10 +74,10 @@ class ImageScaling:
             returns:
                 - est_matrix: estimated matrix
         '''
-        source = (beta * np.eye(size_s)).astype(np.uint8)
+        source = (beta * np.eye(size_s))
         output = self.b_resize(source, size_s, size_t)
 
-        est_matrix = output[:,:,0]/(np.sum(output[:,:,0], axis=1).reshape(size_t, 1))
+        est_matrix = output/(np.sum(output, axis=1).reshape(size_t, 1))
 
         return est_matrix
     
@@ -146,9 +146,9 @@ class ImageScaling:
         return noise
 
     
-    def build_attack_tool(self, img_s, img_t):
+    def build_attack(self, img_s, img_t):
         '''
-            function to build attack using tool
+            generate an attack image
             paramters:
                 - image_s: source image
                 - image_t: target image
@@ -177,13 +177,14 @@ class ImageScaling:
         plt.show()
     
         
-img_s = imageio.imread('./chest.png', as_gray=True)
-N,M = img_s.shape
-#img_t = imageio.imread('./cat.jpg', as_gray=True).astype(np.uint8)
+img_s = imageio.imread('./chest.png', as_gray=True).astype(np.uint8)
+img_t = imageio.imread('./cat.jpg', as_gray=True).astype(np.uint8)
 #img_attack = imageio.imread('./img_attack.png', as_gray=True).astype(np.uint8)
 attack = ImageScaling()
+img_t = attack.b_resize(img_t, 128, 128)
+attack_img = attack.build_attack(img_s, img_t)
 #img_t = attack.nn_resize(img_attack, 128,128)
 #img_resize = attack.b_resize(img, 128, 128)
 #attack.show_img(img_resize)
 #img_attack = attack.build_attack(img_s,img_t)
-#attack.show_img(img_t, 'img_attack.png')
+attack.show_img(attack_img, 'img_attack.png')
