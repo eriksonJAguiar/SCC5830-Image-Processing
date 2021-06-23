@@ -14,6 +14,8 @@ Adversarial attacks insert perturbations on medical images may cause misclassifi
 
 **Rescaling attack overview:**
 
+<img src="https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/image-scaling.png" alt="drawing" width="600"/>
+
 **Related papers:**
 
 - Xiao, Q., Chen, Y., Shen, C., Jiaotong, X., Chen, Y., Cheng, P., Li, K."Seeing is not believing: Camouflage attacks on image scaling algorithms." 28th {USENIX} Security Symposium ({USENIX} Security 19). 2019.![https://www.usenix.org/conference/usenixsecurity19/presentation/xiao](https://www.usenix.org/conference/usenixsecurity19/presentation/xiao). 
@@ -24,13 +26,28 @@ Adversarial attacks insert perturbations on medical images may cause misclassifi
 - Dataset contains 5,863 X-Ray images (JPEG) with 2 classes (Pneumonia/Normal). Dabaset is available on [Kaggle](https://www.kaggle.com/paultimothymooney/chest-xray-pneumonia)
 
 **Images example:**
-
-<img src="https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/image-scaling.png" alt="drawing" width="200"/>
+<div style="display: inline-block">
+    <img src="https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/chest.png" alt="drawing" width="200"/>
+    <img src="https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/img_attack.png" alt="drawing" width="200"/>
+    <img src="https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/img_rescale.png" alt="drawing" width="100"/>
+  </div>
 
 ## Next steps
 
 - Take a look the ![Project 1](https://github.com/eriksonJAguiar/scc5830_final_project/projects/1)
 
+## How to run?
+
+### build environment
+```pyhthon
+    python3 -m venv attack-env
+    pip3 install -r requiments.txt
+```
+
+### run code
+```pyhthon
+    python3 main.py
+```
 
 ## References
 
