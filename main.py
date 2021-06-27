@@ -5,6 +5,7 @@ from numpy.random.mtrand import beta
 from scipy.optimize import minimize
 import math
 import sys
+import cvxpy as opt
 
 from numpy.lib.utils import source
 sys.path.append('../2019-scalingattack/scaleatt')
@@ -43,15 +44,15 @@ class ImageScaling:
             return:
                 - r_img: risized image (nxm)
         '''
-        r_img = np.zeros((m,n), dtype=np.uint8)
-        im_m, im_n = img.shape
+        r_img = np.zeros((n,m), dtype=np.uint8)
+        im_n, im_m = img.shape
         img = np.pad(img, ((0,1),(0,1)), 'constant')
 
-        for x in range(m):
-            for y in range(n):
+        for x in range(n):
+            for y in range(m):
 
-                sx = (x+1) * (im_m/m)-1
-                sy = (y+1) * (im_n/n)-1
+                sx = (x+1) * (im_n/n)-1
+                sy = (y+1) * (im_m/m)-1
 
                 i = math.floor(sx)
                 j = math.floor(sy)
@@ -63,7 +64,7 @@ class ImageScaling:
 
         return r_img
 
-    def get_coeficient(self, beta, size_s, size_t):
+    def get_coeficient(self, m, n, ml, nl):
         '''
             generate coeficients to create perturbations
             parameters:
@@ -74,117 +75,189 @@ class ImageScaling:
             returns:
                 - est_matrix: estimated matrix
         '''
-        source = (beta * np.eye(size_s))
-        output = self.b_resize(source, size_s, size_t)
+        S = (255 * np.identity(m))
+        D = self.b_resize(S, ml, m).astype(np.uint)
+        
+        CL = D / 255
+        i = np.arange(CL.shape[0])
+        CL[i,:] = CL[i,:]/CL.sum()
 
-        est_matrix = output/(np.sum(output, axis=1).reshape(size_t, 1))
+        Sl = (255 * np.identity(n))
+        Dl = self.b_resize(Sl, n, nl).astype(np.uint)
 
-        return est_matrix
-    
-    def get_perturbation(self, beta, mat_l, mat_r, img_s, img_t):
-        '''
-            get image perturbation
-        '''
-        #matrix height
-        #mat_l = self.get_coeficient(m, m_l)
-        #matrix width
-        #mat_r = self.get_coeficient(n, n_l)
-        m, n = img_s.shape
-        m_l, n_l = img_t
+        CR = Dl / 255
+        j = np.arange(CR.shape[1])
+        CR[:,j] = CR[:,j] / CL.sum()
 
-        modif = np.zeros((m,n))
+        return CL, CR
 
-        attack = (np.tanh(modif) + 1)*0.5
-
-        aux = attack.reshape(m,-1)
-        aux = np.matmul(mat_l, aux)
-        aux = np.transpose(aux, (1,0))
-        aux = np.reshape(aux, (n, -1))
-        aux = np.matmul(mat_r, aux)
-        aux = np.reshape(aux, (-1, m_l))
-        output = np.transpose(aux, (1,0))
-
-        # perturbation delta 1
-        d1 = attack - img_s
-        #perturbation delta 2
-        d2 = attack - img_t
-
-        INmax = np.max(img_s)
-
-        obj1 = np.sum(np.sqrt(d1))/(m*n)
-        obj2 = (beta * np.sum(np.sqrt(d2)))/(m_l, n_l)
-        obj = obj1 + obj2
-
-        const = ({'type': 'ineq', 'func': self.constraint})
-
-        attack_sol = minimize(self.objective, attack, method='', constraints=const, options={'disp': True})
-        print(attack_sol)
-
-
-    def objective(self, d1):
-        '''
-            objetive of optimization method
-            parameters:
-                - d: perturbation
-            
-        '''
-        return np.power(np.linalg.norm(d1, ord='-inf'))
-    
-    def constraint(self, mat_l, img_s, imag_t, d1, INmax, epsilon, m,n):
-        ''' 
-            constraint of optimization method
-        '''
-        s_l = self.b_resize(img_s, m, n)
-        return np.linalg.norm((mat_l*(s_l*d1) - imag_t), ord='-inf') >= epsilon*INmax
-    
-    def delta_noise(self, n,m):
-        '''
-            delta noise
-        '''
-        noise = np.random.logistic(1, 0.1, [n,m])
-
-        return noise
-
-    
     def build_attack(self, img_s, img_t):
         '''
-            generate an attack image
+            build attack
+            parameters: 
+                - img_s: source image
+                - img_t: target image
+            return:
+                - result_attack_img: attack image
+        '''
+        print('Building attack ...')
+        m, n = img_s.shape
+        ml, nl = img_t.shape
+        print('Getting coeficients ...')
+        CL, CR = self.get_coeficient(m,n, ml, nl)
+
+        img_sl = self.b_resize(img_s, m, nl)
+
+        print('Build one direction attack (CL) ...')
+        attack_img1 = self.build_direct_attack(img_sl, img_t, CL)
+        attack_img1 = np.clip(np.round(attack_img1), 0, 255)
+
+        print('Build one direction attack (CR) ...')
+        attack_img2 = self.build_direct_attack(img_s.T, attack_img1.T, CR.T)
+        attack_img2 = np.clip(np.round(attack_img2), 0, 255)
+
+        print('Building result image')
+        result_attack_img = (attack_img2.T).astype(np.uint8)
+
+        return result_attack_img
+
+
+    def build_direct_attack(self, img_s, img_t, mat_coeficient):
+        '''
+            generate attack and get perturbation towards one direction (horizontal)
             paramters:
                 - image_s: source image
                 - image_t: target image
+                - mat_coeficient: matrix for coeficient L or R
             return:
                 - A: attack image
         '''   
-        m, n = img_s.shape
-        m_l, n_l = img_t.shape
-        beta = 1
+        A = np.copy(img_s).astype(np.float64)
+        only = np.where(np.sum(mat_coeficient, axis=0))[0]
 
-        mat_l = self.get_coeficient(beta, m, m_l)
-        mat_r = self.get_coeficient(beta, n, n_l)
+        #A = self.get_perturbation(beta, mat_l, mat_r, img_s, img_t)
+        epsilon = 1.0
 
-        img_s = img_s/beta
-        img_t = img_t/beta
+        optimal_values = np.zeros(img_s.shape[1])
 
-        A = self.get_perturbation(beta, mat_l, mat_r, img_s, img_t)
+        #run go horizontal
+        print('Optimize perturbation ...')
+        for h in range(img_s.shape[1]):
+            source_h = img_s[only, h]
+            target_h = img_t[:, h]
 
-        return (A*beta).astype(np.uint8)
+            optimal_prob, optimal_delta = None, None
+            delta1 = opt.Variable(source_h.shape[0])
+            mat_ident = np.identity(source_h.shape[0])
+                
+            cost = (1/2) * opt.quad_form(delta1, mat_ident)
+            #cost = opt.sum_squares(delta1, mat_ident)/(img_s.shape[0]*img_s.shape[1])
+            obj = opt.Minimize(cost)
+            attack_img = (source_h + delta1)
+            C_aux = mat_coeficient[:, only]
+            aux = (C_aux @ attack_img) - target_h
+            contrs = [attack_img <= 255, attack_img >= 0, opt.norm(aux,"inf") <= epsilon*255]
+            #constraint1 = attack_img <= 255
+            #constraint2 = attack_img >= 0
+            #C_aux = mat_coeficient[:, only]
+            #constraint3 =  opt.norm_inf(C_aux @ attack_img - target_h) <= epsilon
+            #constraint3 =  opt.abs(C_aux @ attack_img - target_h) <= epsilon
+           
 
+            optimal_prob = opt.Problem(obj, contrs)
+            #optimal_prob.solve()
+            
+
+            probl_ind = self.probl_solve(optimal_prob, epsilon, h)
+            optimal_delta = delta1
+
+            if probl_ind is not True:
+                raise Exception('Could not solve the problem')
+
+            # if probl_ind is True:
+            #     optimal_prob = probl
+            #     optimal_delta = delta1
+            #     if epsilon > highest_epsilon:
+            #             highest_epsilon = ep
+            #         break
+            #     else:
+            #         continue0
+        
+            if optimal_prob is None:
+                raise Exception('Could not solve the problem')
+            
+            optimal_values[h] = optimal_prob.value
+
+            assert optimal_delta is not None
+            A[only, h] = source_h +  optimal_delta.value
+    
+        # if highest_epsilon > epsilon[0]:
+        #     print('Another epsilon value was choose')
+
+
+        return A
+
+    def probl_solve(self, probl, epsilon, h):
+        '''
+            try to solve the proble by optimization method
+            quadratic optimization
+            parameters:
+                - probl: problem to solve (library cvxy)
+                - epsilon: epsilon testing
+                - h: horizontal positions
+            return:
+                - bool: True if problem to solve , if not return False
+        '''
+        try:
+            probl.solve()
+        except Exception as e1:
+            print('QSQP Solver failed')
+            try:
+                probl.solve(solver=opt.ECOS, verbose=True)
+            except Exception as e2:
+                print('Error to solve the problem: with epsilon {} and h {}'.format(epsilon, h))
+                print('Errors: {} and {}'.format(e1, e2))
+                return False
+        
+        if probl.status != opt.OPTIMAL and probl.status != opt.OPTIMAL_INACCURATE:
+            print('Could not solve the problem')
+            return False
+        
+        return True
+    
+    def adjust_target_image(self, img_s, img_t, new_size):
+        '''
+            this method convert image to another shape used by algorithm
+            paramters:
+                - img_s: source image
+                - img_t target image
+                - new_size: new shape of position 0 for target image
+            return:
+                - img_t_new: target image with new shapes
+        '''
+        _, n = img_s.shape
+        img_t_new = attack.b_resize(img_t, new_size, n)
+
+        return img_t_new
     
     def show_img(self, img, fname):
         plt.imshow(img, cmap='gray', vmin=0, vmax=255)
-        #plt.imsave(fname, img, cmap='gray', vmin=0, vmax=255)
+        plt.imsave(fname, img, cmap='gray', vmin=0, vmax=255)
         plt.axis('off')
         plt.show()
     
         
-img_s = imageio.imread('./chest.png', as_gray=True).astype(np.uint8)
-img_t = imageio.imread('./cat.jpg', as_gray=True).astype(np.uint8)
-#img_attack = imageio.imread('./img_attack.png', as_gray=True).astype(np.uint8)
-attack = ImageScaling()
-img_t = attack.b_resize(img_t, 128, 128)
-attack_img = attack.build_attack(img_s, img_t)
-#img_t = attack.nn_resize(img_attack, 128,128)
-#img_resize = attack.b_resize(img, 128, 128)
-#attack.show_img(img_resize)
-#img_attack = attack.build_attack(img_s,img_t)
-attack.show_img(attack_img, 'img_attack.png')
+
+if __name__ == '__main__':
+    print('Load images ...')
+    img_s = imageio.imread('./chest.png', as_gray=True).astype(np.uint8)
+    img_t = imageio.imread('./cat.jpg', as_gray=True).astype(np.uint8)
+
+    attack = ImageScaling()
+    print('Adjust target image...')
+    img_t = attack.adjust_target_image(img_s, img_t, 128)
+    print('Starting building attack ...')
+    attack_img = attack.build_attack(img_s, img_t)
+    print('Finish attack generation!')
+    print('plot new image')
+    attack.show_img(attack_img, 'img_attack_new.png')
