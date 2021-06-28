@@ -1,14 +1,11 @@
 import numpy as np
 import imageio
 import matplotlib.pyplot as plt
-from numpy.random.mtrand import beta
-from scipy.optimize import minimize
-import math
-import sys
 import cvxpy as opt
+import math
 
-from numpy.lib.utils import source
-sys.path.append('../2019-scalingattack/scaleatt')
+#from numpy.lib.utils import source
+#sys.path.append('../2019-scalingattack/scaleatt')
 
 class ImageScaling:
     '''
@@ -132,11 +129,13 @@ class ImageScaling:
             return:
                 - A: attack image
         '''   
-        A = np.copy(img_s).astype(np.float64)
-        only = np.where(np.sum(mat_coeficient, axis=0))[0]
+        #A = np.copy(img_s).astype(np.float64)
+        A = np.zeros(img_s.shape)
+        only = np.arange(img_s.shape[0])
+        #only = np.where(np.sum(mat_coeficient, axis=0))[0]
 
         #A = self.get_perturbation(beta, mat_l, mat_r, img_s, img_t)
-        epsilon = 1.0
+        epsilon = 0.999
 
         optimal_values = np.zeros(img_s.shape[1])
 
@@ -150,13 +149,14 @@ class ImageScaling:
             delta1 = opt.Variable(source_h.shape[0])
             mat_ident = np.identity(source_h.shape[0])
                 
-            cost = (1/2) * opt.quad_form(delta1, mat_ident)
+            cost = opt.quad_form(delta1, mat_ident)
             #cost = opt.sum_squares(delta1, mat_ident)/(img_s.shape[0]*img_s.shape[1])
+            
             obj = opt.Minimize(cost)
             attack_img = (source_h + delta1)
             C_aux = mat_coeficient[:, only]
             aux = (C_aux @ attack_img) - target_h
-            contrs = [attack_img <= 255, attack_img >= 0, opt.norm(aux,"inf") <= epsilon*255]
+            contrs = [attack_img <= 255, attack_img >= 0, opt.norm_inf(aux) <= epsilon*255]
             #constraint1 = attack_img <= 255
             #constraint2 = attack_img >= 0
             #C_aux = mat_coeficient[:, only]
