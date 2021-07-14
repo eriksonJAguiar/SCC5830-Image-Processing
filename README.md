@@ -14,7 +14,7 @@ Adversarial attacks insert perturbations on medical images may cause misclassifi
 
 **Rescaling attack overview:**
 
-<img src="https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/image-scaling.png" alt="drawing" width="600"/>
+<img src="https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/images/image-scaling.png" alt="drawing" width="600"/>
 
 **Related papers:**
 
@@ -36,9 +36,9 @@ Adversarial attacks insert perturbations on medical images may cause misclassifi
  
  <img src="https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/img_attack.png" alt="drawing" width="500"/>
 
-## Next steps
+## Experiments
 
-- Take a look the ![Project 1](https://github.com/eriksonJAguiar/scc5830_final_project/projects/1)
+- Take a look the ![Jupyter Notebook](https://github.com/eriksonJAguiar/scc5830_final_project/blob/main/image_scaling.ipynb)
 
 ## How to run?
 
