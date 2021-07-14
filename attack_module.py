@@ -1,4 +1,3 @@
-from os import name
 import numpy as np
 import cv2
 import imageio
@@ -6,16 +5,14 @@ import matplotlib.pyplot as plt
 import cvxpy as opt
 import math
 import sys
+import time
+import glob
 
 sys.path.append('../2019-scalingattack/scaleatt')
-from scaling.ScalingGenerator import ScalingGenerator
-from scaling.SuppScalingLibraries import SuppScalingLibraries
-from scaling.SuppScalingAlgorithms import SuppScalingAlgorithms
-from attack.QuadrScaleAttack import QuadraticScaleAttack
 
 class ImageScaling:
     '''
-        Image scalling attacks methods for images
+        Image scalling attack method based on Qui
     '''
     def nn_resize(self, img, n, m):
         '''
@@ -67,10 +64,30 @@ class ImageScaling:
 
         return r_img
 
-    def open_cv_resize(self, image, n, m):
+    def open_cv_resize(self, img, n, m, inter=0):
         '''
             resize objects -- openCV
+            paramters:
+                - image: reference image
+                - n: wight
+                - m: height
+                - inter: interpolation method
+                    * (0) cv2.INTER_NEAREST
+                    * (1) cv2.INTER_AREA
+                    * (3) cv2.INTER_LANCZOS4
+                    * (4) cv2.INTER_CUBIC
         '''
+        interp = cv2.INTER_NEAREST
+        if inter == 1:
+            interp = cv2.INTER_AREA
+        elif inter == 3:
+            interp = cv2.INTER_LANCZOS4
+        elif inter == 4:
+            interp = cv2.INTER_CUBIC
+
+        img_resize = cv2.resize(img, (n,m), interpolation=interp)
+
+        return img_resize
     
     def get_coeficient(self, m, n, ml, nl):
         '''
@@ -129,14 +146,43 @@ class ImageScaling:
 
         return result_attack_img
 
-    def build_attack_library(self, img_s, img_t):
-        '''
-            build attack by using library develop to Quiring et al. (2020)
-        '''
-        scaling_alg = SuppScalingAlgorithms.LANCZOS
-        scaling_lib = SuppScalingLibraries.PIL
+    def build_attack_library(self, img_s, img_t, inter=0, lib=0):
+        """"
+            build attack using library develop by Quiring et al. (2020)
+            - img_s: source image
+            - img_t: target image
+            - inter: interpolation method
+                    * (0) NEAREST
+                    * (1) AREA
+                    * (3) LANCZOS4
+                    * (4) CUBIC
+            - lib: library base
+                * (0) PIL
+                * (1) CV
+                * (3) TF
+        """
+        from scaling.ScalingGenerator import ScalingGenerator
+        from scaling.SuppScalingLibraries import SuppScalingLibraries
+        from scaling.SuppScalingAlgorithms import SuppScalingAlgorithms
+        from attack.QuadrScaleAttack import QuadraticScaleAttack
 
-        attack_scaling = QuadraticScaleAttack(eps=0.01, verbose=1)
+        
+        scaling_alg = SuppScalingAlgorithms.NEAREST
+        if inter == 1:
+            scaling_alg = SuppScalingAlgorithms.AREA
+        elif inter == 3:
+            scaling_alg = SuppScalingAlgorithms.CUBIC
+        elif inter == 4:
+            scaling_alg = SuppScalingAlgorithms.LANCZOS
+
+        
+        scaling_lib = SuppScalingLibraries.PIL
+        if lib == 1:
+            scaling_lib = SuppScalingLibraries.CV
+        elif lib == 2:
+            scaling_lib = SuppScalingLibraries.TF
+
+        attack_scaling = QuadraticScaleAttack(eps=4, verbose=1)
         approach_scaling = ScalingGenerator.create_scaling_approach(x_val_source_shape=img_s.shape,
                                                                     x_val_target_shape=img_t.shape,
                                                                     lib=scaling_lib,
@@ -270,25 +316,69 @@ class ImageScaling:
         return img_t_new
     
     def show_img(self, img, fname=None):
+        """
+            plot image
+            parameters:
+                - img: source image
+                - fname: file to save
+        """
         plt.imshow(img, cmap='gray', vmin=0, vmax=255)
         if fname != None:
             plt.imsave(fname, img, cmap='gray', vmin=0, vmax=255)
         plt.axis('off')
         plt.show()
     
+    def build_repository(self):
+        """
+            build repository to load images
+        """
+        files = glob.glob("../chest_xray/test/NORMAL/*.jpeg")
+        images_index = np.random.choice(np.arange(0,len(files), dtype=np.int), 30)
+
+        idx = 1
+        for i in images_index:
+            img = cv2.imread(files[i])
+            img_resize = cv2.resize(img, (442, 302))
+            cv2.imwrite("./images/chest_images/chest%d.jpeg"%(idx), img_resize)
+            idx += 1
+
+        #return files[images_index]
+    
+    def run_experiments(self):
+        """
+            Execute experiments to craft images with image scaling attacks
+        """
+        print('Starting building attack ...')
+        method = ["NEAREST", "AREA", "LANCZOS4", "CUBIC"]
+        lib = ["PIL", "CV", "TF"]
+        img_t = imageio.imread('./images/cat.jpg', as_gray=True).astype(np.uint8)
+        start = time.time()
+        for i in range(1,31):
+            img_s = imageio.imread('./images/chest_images/chest%d.jpeg'%(i), as_gray=True).astype(np.uint8)
+            for l in range(0,2):
+                try:
+                    attack_img = self.build_attack_library(img_s, img_t, 0, l)
+                    plt.imsave('./images/atack_exp/img{}_attack_{}_{}.jpeg'.format(i,lib[l], method[0]), attack_img, cmap='gray', vmin=0, vmax=255)
+                except Exception as e:
+                    print("Error to generate method {} for library {}".format(method[0], lib[l]))
+                    print("error %s"%(str(e)))
+                    continue
         
+        print("Exec about {}s".format(time.time() - start))
+    
+    def run_one_image(self, path_s, path_t):
+        """
+            Execute experiments to craft single image with scaling attacks
+            parameters:
+                - path_s: path of source image
+                - path t: path of target image
+        """
+        print('Starting building attack ...')
+        img_t = imageio.imread(path_s, as_gray=True).astype(np.uint8)
+        img_s = imageio.imread(path_t, as_gray=True).astype(np.uint8)
+        attack_img = self.build_attack_library(img_s, img_t, 0, 1)
+        plt.imsave("crafted_image.jpeg", attack_img, cmap='gray', vmin=0, vmax=255)
 
 if __name__ == '__main__':
-    print('Load images ...')
-    img_s = imageio.imread('./chest-1.png', as_gray=True).astype(np.uint8)
-    img_t = imageio.imread('./cat-1.jpg', as_gray=True).astype(np.uint8)
-
     attack = ImageScaling()
-    #print('Adjust target image...')
-    img_t = attack.adjust_target_image(img_s, img_t, 220)
-    print('Starting building attack ...')
-    attack_img = attack.build_attack_library(img_s, img_t)
-    #attack_img = attack.build_attack(img_s, img_t)
-    print('Finish attack generation!')
-    print('plot new image')
-    attack.show_img(attack_img, 'img_attack_library.png')
+    attack.run_experiments()
