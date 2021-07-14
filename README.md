@@ -25,20 +25,34 @@ Adversarial attacks insert perturbations on medical images may cause misclassifi
 
 - Dataset contains 5,863 X-Ray images (JPEG) with 2 classes (Pneumonia/Normal). Dabaset is available on [Kaggle](https://www.kaggle.com/paultimothymooney/chest-xray-pneumonia)
 
-**Images example:**
+**Input images example:**
 <div style="display: inline-block">
-    <img src="https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/chest.png" alt="drawing" width="200"/>
-    <img src="https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/img_attack.png" alt="drawing" width="200"/>
-    <img src="https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/img_rescale.png" alt="drawing" width="100"/>
+    <img src="https://github.com/eriksonJAguiar/scc5830_final_project/blob/main/images/chest/chest1.jpeg" width="200"/>
+    <img src="https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/images/cat.jpg" alt="drawing" width="100"/>
   </div>
   
- **Result image -- attack**
+  P.s. Input image example can find on ![chest_images](https://github.com/eriksonJAguiar/scc5830_final_project/tree/main/images/chest_images)
+  
+ **Result image after attack**
  
- <img src="https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/img_attack.png" alt="drawing" width="500"/>
-
+ <img src="https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/images/attacks/img1_attack_CV_LANCZOS4.jpeg" width="200"/>
+ 
+ P.s. Attack images examples can find on ![attacks_experiments](https://github.com/eriksonJAguiar/scc5830_final_project/tree/main/images/attacks_experiments) (Nearest-neighbor interpolation), also others crafted images are available on ![attacks](https://github.com/eriksonJAguiar/scc5830_final_project/tree/main/images/attacks)  (different interpolations methods) 
+ 
+  **Restored image after attack**
+ 
+ - Median filter:
+ <img src="https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/images/restored/img8_restored_median.jpeg" width="200"/>
+ 
+ - Remove peaks:
+ <img src="https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/images/restored/img8_restored_peak.jpeg" width="200"/>
+ 
+ - Minimum filter:
+ <img src="https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/images/restored/img8_restored_min.jpeg" width="200"/>
+  
 ## Experiments
 
-- Take a look the ![Jupyter Notebook](https://github.com/eriksonJAguiar/scc5830_final_project/blob/main/image_scaling.ipynb)
+- We suggest using our Jupyter Notebook available on ![Jupyter Notebook](https://github.com/eriksonJAguiar/scc5830_final_project/blob/main/image_scaling.ipynb) to reproduce experiments
 
 ## How to run?
 
@@ -50,10 +64,22 @@ Adversarial attacks insert perturbations on medical images may cause misclassifi
 
 ### Modules available
 
-* attack_module -> ImageScaling class: related to attack method:
-- 
-* defense_module -> Defense class: related to attack method:
-- Neighbor-nearest interpolation
+**attack_module -> ImageScaling class: related to attack method:**
+
+- Bileaner interpolation [b_resize]
+- Neighbor-nearest interpolation [nn_resize]
+-  Build attack [Build_attack](our implementation)
+-  Build Attack with library built for ![Quiring (2020)](https://github.com/EQuiw/2019-scalingattack)
+-  Build repository [build_repository] -> Create repository to load attack image
+-  run experiments[run_experiments] -> run a batch of experiments
+-  run expertiment one image [run_one_image] -> run experiments for one image
+
+**defense_module -> Defense class: related to defesive method:***
+
+- Median filter to restore image [restoration_image_median] 
+- Remove peaks and  to restore image [restoration_image_median] 
+- Minimum filter to detect attac image [restoration_image_median] 
+- Unshap mask to test high-pass filter [unsharp_mask] 
 
 ## References
 
