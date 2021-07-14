@@ -12,7 +12,7 @@ sys.path.append('../2019-scalingattack/scaleatt')
 
 class ImageScaling:
     '''
-        Image scalling attack method based on Qui
+        Image scalling attack method based on Quiring (2020) and Xiao (2019)
     '''
     def nn_resize(self, img, n, m):
         '''

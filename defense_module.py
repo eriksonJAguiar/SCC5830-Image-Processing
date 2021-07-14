@@ -199,4 +199,3 @@ class Defense:
         plt.plot(hist)
         plt.xlim([0, 255])
         plt.show()
-    
