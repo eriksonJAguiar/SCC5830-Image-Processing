@@ -48,10 +48,12 @@ Adversarial attacks insert perturbations on medical images may cause misclassifi
     pip3 install -r requiments.txt
 ```
 
-### run code
-```pyhthon
-    python3 main.py
-```
+### Modules available
+
+* attack_module -> ImageScaling class: related to attack method:
+- 
+* defense_module -> Defense class: related to attack method:
+- Neighbor-nearest interpolation
 
 ## References
 
