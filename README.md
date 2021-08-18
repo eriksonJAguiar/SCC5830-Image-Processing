@@ -27,28 +27,28 @@ Adversarial attacks insert perturbations on medical images may cause misclassifi
 
 **Input images example:**
 <div style="display: inline-block">
-    <img src="https://github.com/eriksonJAguiar/scc5830_final_project/blob/main/images/chest/chest1.jpeg" width="200"/>
-    <img src="https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/images/cat.jpg" alt="drawing" width="100"/>
+    <img src="./images/chest/chest1.jpeg" width="200"/>
+    <img src="./images/cat.jpg" alt="drawing" width="100"/>
   </div>
   
   P.s. Input image example can find on ![chest_images](https://github.com/eriksonJAguiar/scc5830_final_project/tree/main/images/chest_images)
   
  **Result image after attack**
  
- <img src="https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/images/attacks/img1_attack_CV_LANCZOS4.jpeg" width="200"/>
+ <img src="./images/attacks/img1_attack_CV_LANCZOS4.jpeg" width="200"/>
  
  P.s. Attack images examples can find on ![attacks_experiments](https://github.com/eriksonJAguiar/scc5830_final_project/tree/main/images/attacks_experiments) (Nearest-neighbor interpolation), also others crafted images are available on ![attacks](https://github.com/eriksonJAguiar/scc5830_final_project/tree/main/images/attacks)  (different interpolations methods) 
  
   **Restored image after attack**
  
  - Median filter:
- <img src="https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/images/restored/img8_restored_median.jpeg" width="200"/>
+ <img src="./images/restored/img8_restored_median.jpeg" width="200"/>
  
  - Remove peaks:
- <img src="https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/images/restored/img8_restored_peak.jpeg" width="200"/>
+ <img src="./images/restored/img8_restored_peak.jpeg" width="200"/>
  
  - Minimum filter:
- <img src="https://raw.githubusercontent.com/eriksonJAguiar/scc5830_final_project/main/images/restored/img8_restored_min.jpeg" width="200"/>
+ <img src="./images/restored/img8_restored_min.jpeg" width="200"/>
   
 ## Experiments
 
