@@ -1,2 +1,7 @@
 ./attack/*
 ./images/*
+./temp/*
+./build/*
+./imageScaling_attack_defense.egg-info/*
+./dist/*
+temp/2019-scalingattack/
